@@ -1,0 +1,23 @@
+{
+  "dependencies": {
+    "discord.js": "^14.1.2",
+    "dotenv": "^16.0.1"
+  },
+  "name": "ctb-library-bot",
+  "version": "1.0.0",
+  "description": "a discord bot for the ctb library server",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/twowr/ctb-library-bot.git"
+  },
+  "author": "ctb library dev team",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/twowr/ctb-library-bot/issues"
+  },
+  "homepage": "https://github.com/twowr/ctb-library-bot#readme"
+}
