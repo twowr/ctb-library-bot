@@ -13,7 +13,7 @@ for (const file of commandFiles) {
 	commands.push(command.data.toJSON());
 }
 
-const rest = new REST({ version: '10' }).setToken(token);
+const rest = new REST({ version: '10' }).setToken(process.env.token);
 
 rest.put(Routes.applicationCommands(process.env.client_id), { body: commands })
 	.then(() => console.log('Successfully registered commands.'))
