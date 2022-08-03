@@ -3,7 +3,7 @@ require('dotenv').config()
 const fs = require('node:fs');
 const path = require('node:path');
 
-const { Client, GatewayIntentBits } = require('discord.js')
+const { Client, Collection, GatewayIntentBits } = require('discord.js')
 const { token, client_id } = process.env
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
