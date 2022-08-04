@@ -34,11 +34,4 @@ for (const file of commandFiles) {
 	client.commands.set(command.data.name, command);
 }
 
-const sequelize = new Sequelize('database', 'user', 'password', {
-	host: 'localhost',
-	dialect: 'sqlite',
-	logging: false,
-	storage: 'database.sqlite',
-});
-
 client.login(token);
