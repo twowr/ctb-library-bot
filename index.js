@@ -4,6 +4,13 @@ const fs = require('fs');
 const path = require('path');
 
 const Sequelize = require('sequelize');
+// database
+const sequelize = new Sequelize('database', 'user', 'password', {
+	host: 'localhost',
+	dialect: 'sqlite',
+	logging: false,
+	storage: 'database.sqlite',
+});
 
 const { Client, Collection, GatewayIntentBits } = require('discord.js')
 const token = process.env.client_token
