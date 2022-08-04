@@ -3,6 +3,8 @@ require('dotenv').config()
 const fs = require('node:fs');
 const path = require('node:path');
 
+const Sequelize = require('sequelize');
+
 const { Client, Collection, GatewayIntentBits } = require('discord.js')
 const token = process.env.client_token
 
@@ -31,5 +33,12 @@ for (const file of commandFiles) {
 	const command = require(filePath);
 	client.commands.set(command.data.name, command);
 }
+
+const sequelize = new Sequelize('database', 'user', 'password', {
+	host: 'localhost',
+	dialect: 'sqlite',
+	logging: false,
+	storage: 'database.sqlite',
+});
 
 client.login(token);
