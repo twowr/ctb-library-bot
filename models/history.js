@@ -1,28 +1,38 @@
-module.exports = (sequelize, DataTypes) => {
-    return sequelize.define('player', {
-        section_id: {
-            type: DataTypes.INTEGER,
-            primaryKey: true,
-            autoIncrement: true,
-        },
-        name: {
-            type: DataTypes.STRING,
-            allowNull: false,
-            unique: true,
-        },
-        when: {
-            type: DataTypes.DATEONLY,
-            allowNull: false,
-        },
-        whp: {
-            type: DataTypes.STRING,
-            allowNull: false,
-        },
-        witi: {
-            type: DataTypes.STRING,
-            allowNull: false,
-        }
-    }, {
-        timestamps: false,
-    });
-}
+const Sequelize = require('sequelize');
+const sequelize = new Sequelize('database', 'username', 'password', {
+	host: 'localhost',
+	dialect: 'sqlite',
+	logging: false,
+	storage: 'database.sqlite',
+})
+
+const player = require('./models/player.js')(sequelize, Sequelize)
+
+const History = sequelize.define('history', {
+    section_id: {
+        type: Sequelize.DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
+    },
+
+    player: Sequelize.DataTypes.STRING,
+
+    when: {
+        type: Sequelize.DataTypes.DATEONLY,
+        allowNull: false,
+    },
+    whp: {
+        type: Sequelize.DataTypes.STRING,
+        allowNull: false,
+    },
+    witi: {
+        type: Sequelize.DataTypes.STRING,
+        allowNull: false,
+    }
+}, {
+    timestamps: false,
+})
+
+History.belongsTo(player, { foreignKey: 'player', as : 'player' })
+
+module.exports = { History, player }

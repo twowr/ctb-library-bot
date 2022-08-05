@@ -1,4 +1,5 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder } = require('discord.js')
+const { History } = require('../models/history.js')
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -21,6 +22,23 @@ module.exports = {
                 .setDescription('why-is-that-important')
                 .setRequired(true)),
 	async execute(interaction) {
-		await interaction.reply(`added a new event for ${interaction.options.getString('playername')} on ${interaction.options.getString('when')} with ${interaction.options.getString('whathappened')} and ${interaction.options.getString('witi')}`);
-	},
-};
+		const player_name = interaction.options.getString('playername')
+        const when = interaction.options.getString('when')
+        const what_happened = interaction.options.getString('whathappened')
+        const witi = interaction.options.getString('witi')
+
+        try {
+            const hystory = await History.create({
+                name: player_name,
+                when: when,
+                what_happened: what_happened,
+                witi: witi,
+            })
+
+            return interaction.reply(`Added new event for ${player_name}`)
+        }
+        catch (error) {
+            return interaction.reply('Something went wrong with adding a event')
+        }
+	}
+}
