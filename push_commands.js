@@ -20,3 +20,8 @@ const rest = new REST({ version: '10' }).setToken(process.env.client_token)
 rest.put(Routes.applicationCommands(process.env.client_id), { body: commands })
 	.then(() => console.log('Successfully registered commands.'))
 	.catch(console.error)
+
+/*rest.delete(Routes.applicationCommand(clientId, 'commandId'))
+	.then(() => console.log('Successfully deleted application command'))
+	.catch(console.error)
+*/

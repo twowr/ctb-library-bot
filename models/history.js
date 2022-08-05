@@ -6,7 +6,7 @@ const sequelize = new Sequelize('database', 'username', 'password', {
 	storage: 'database.sqlite',
 })
 
-const player = require('./models/player.js')(sequelize, Sequelize)
+const player = require('./player.js')(sequelize, Sequelize)
 
 const History = sequelize.define('history', {
     section_id: {
@@ -33,6 +33,6 @@ const History = sequelize.define('history', {
     timestamps: false,
 })
 
-History.belongsTo(player, { foreignKey: 'player', as : 'player' })
+History.belongsTo(player, { foreignKey: 'player', as : 'name' })
 
 module.exports = { History, player }
