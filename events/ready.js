@@ -1,9 +1,10 @@
-const { History } = require('../models/history.js')
+const { History, player } = require('../models/history.js')
 
 module.exports = {
     name: 'ready',
-    execute(client) {
+    async execute(client) {
         History.sync()
+        player.sync()
         console.log(`Logged in as ${client.user.tag}!`)
     }
 }
