@@ -35,7 +35,7 @@ module.exports = {
         subcommand.setName("edit")
                 .setDescription("Edit an event")
                 .addStringOption(option =>
-                        option.setName('event id')
+                        option.setName('id')
                             .setDescription('The id of the event to edit')
                             .setRequired(true))),
 	async execute(interaction) {
@@ -45,14 +45,13 @@ module.exports = {
             const whathappened = interaction.options.getStringOption('whathappened')
             const witi = interaction.options.getStringOption('witi')
 
-            const history = new History({
+            const history = await History.create({
                 player: player,
                 when: when,
                 whp: whathappened,
                 witi: witi,
             })
-
-            await history.save()
+            
             await interaction.reply({ content: `Event added!`, ephemeral: true })
         }
         
