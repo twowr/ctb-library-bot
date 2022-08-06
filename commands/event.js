@@ -40,10 +40,10 @@ module.exports = {
                             .setRequired(true))),
 	async execute(interaction) {
 		if (interaction.options.getSubcommand() === 'add') {
-            const player = interaction.options.getStringOption('playername')
-            const when = interaction.options.getStringOption('when')
-            const whathappened = interaction.options.getStringOption('whathappened')
-            const witi = interaction.options.getStringOption('witi')
+            const player = interaction.options.getString('playername')
+            const when = interaction.options.getString('when')
+            const whathappened = interaction.options.getString('whathappened')
+            const witi = interaction.options.getString('witi')
 
             const history = await History.create({
                 player: player,
@@ -51,12 +51,12 @@ module.exports = {
                 whp: whathappened,
                 witi: witi,
             })
-            
+
             await interaction.reply({ content: `Event added!`, ephemeral: true })
         }
         
         if (interaction.options.getSubcommand() === 'remove') {
-            const id = interaction.options.getStringOption('id')
+            const id = interaction.options.getString('id')
             const history = await History.findByPk(id)
             await history.destroy()
             await interaction.reply({ content: `Event removed!`, ephemeral: true })

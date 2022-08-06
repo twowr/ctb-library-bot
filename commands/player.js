@@ -35,20 +35,20 @@ module.exports = {
                     .setDescription("Display the player list")),
     async execute(interaction) {
         if (interaction.options.getSubcommand() === 'add') {
-            const playername = interaction.options.getStringOption('playername')
+            const playername = interaction.options.getString('playername')
             const player = await Player.create({
                 playername: playername,
             })
         }
 
         if (interaction.options.getSubcommand() === 'remove') {
-            const playername = interaction.options.getStringOption('playername')
+            const playername = interaction.options.getString('playername')
             await Player.destroy({ where: { playername: playername } })
         }
 
         if (interaction.options.getSubcommand() === 'rename') {
-            const playername = interaction.options.getStringOption('playername')
-            const newplayername = interaction.options.getStringOption('newplayername')
+            const playername = interaction.options.getString('playername')
+            const newplayername = interaction.options.getString('newplayername')
             await Player.update({ playername: newplayername }, { where: { playername: playername } })
         }
 
