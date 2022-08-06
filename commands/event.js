@@ -28,7 +28,7 @@ module.exports = {
         subcommand.setName("remove")
                 .setDescription("Remove an event")
                 .addStringOption(option =>
-                    option.setName('event id')
+                    option.setName('id')
                         .setDescription('The id of the event to remove')
                         .setRequired(true)))
     .addSubcommand(subcommand =>
@@ -57,7 +57,7 @@ module.exports = {
         }
         
         if (interaction.options.getSubcommand() === 'remove') {
-            const id = interaction.options.getStringOption('event id')
+            const id = interaction.options.getStringOption('id')
             const history = await History.findByPk(id)
             await history.destroy()
             await interaction.reply({ content: `Event removed!`, ephemeral: true })
