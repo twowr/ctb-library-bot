@@ -36,26 +36,39 @@ module.exports = {
     async execute(interaction) {
         if (interaction.options.getSubcommand() === 'add') {
             const playername = interaction.options.getString('playername')
-            const player = await Player.create({
-                playername: playername,
-            })
+            try {
+                const player = await Player.create({ playername: playername })
+                return interaction.reply({ content: `Player added!`, ephemeral: true })
+            }
+            catch (error) {
+                if (error.name === 'SequelizeUniqueConstraintError') {
+                    return interaction.reply({content: 'That player already in the database.', ephemeral: true});
+                }
+    
+                return interaction.reply({content: 'Something went wrong with adding the player.', ephemeral: true});
+            }
         }
 
         if (interaction.options.getSubcommand() === 'remove') {
             const playername = interaction.options.getString('playername')
             await Player.destroy({ where: { playername: playername } })
+
+            return interaction.reply({ content: `Player removed!`, ephemeral: true })
         }
 
         if (interaction.options.getSubcommand() === 'rename') {
             const playername = interaction.options.getString('playername')
             const newplayername = interaction.options.getString('newplayername')
             await Player.update({ playername: newplayername }, { where: { playername: playername } })
+
+            return interaction.reply({ content: `Player renamed!`, ephemeral: true })
         }
 
         if (interaction.options.getSubcommand() === 'display') {
             const players = await Player.findAll()
             const playerlist = players.map(player => player.playername).join(', ')
-            await interaction.reply({ content: `The player list is: ${playerlist}`, ephemeral: true })
+            
+            return interaction.reply({ content: `The player list is: ${playerlist}`})
         }
     }
 }

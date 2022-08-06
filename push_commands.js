@@ -21,7 +21,7 @@ rest.put(Routes.applicationCommands(process.env.client_id), { body: commands })
 	.then(() => console.log('Successfully registered commands.'))
 	.catch(console.error)
 
-/*rest.delete(Routes.applicationCommand(clientId, 'commandId'))
+/*rest.delete(Routes.applicationCommand(process.env.client_id, 'command id'))
 	.then(() => console.log('Successfully deleted application command'))
 	.catch(console.error)
 */

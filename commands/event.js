@@ -52,14 +52,14 @@ module.exports = {
                 witi: witi,
             })
 
-            await interaction.reply({ content: `Event added!`, ephemeral: true })
+            return interaction.reply({ content: `Event added!`, ephemeral: true })
         }
         
         if (interaction.options.getSubcommand() === 'remove') {
             const id = interaction.options.getString('id')
             const history = await History.findByPk(id)
             await history.destroy()
-            await interaction.reply({ content: `Event removed!`, ephemeral: true })
+            return interaction.reply({ content: `Event removed!`, ephemeral: true })
         }
     }
 }
