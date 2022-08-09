@@ -8,6 +8,8 @@ const token = process.env.client_token
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] })
 
+client.user.setActivity('is catching the beat')
+
 const eventsPath = path.join(__dirname, 'events')
 const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith('.js'))
 

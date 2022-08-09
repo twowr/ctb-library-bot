@@ -42,10 +42,10 @@ module.exports = {
             }
             catch (error) {
                 if (error.name === 'SequelizeUniqueConstraintError') {
-                    return interaction.reply({content: 'That player already in the database.', ephemeral: true});
+                    return interaction.reply({content: 'That player already in the database.', ephemeral: true})
                 }
     
-                return interaction.reply({content: 'Something went wrong with adding the player.', ephemeral: true});
+                return interaction.reply({content: 'Something went wrong with adding the player.', ephemeral: true})
             }
         }
 
