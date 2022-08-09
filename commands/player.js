@@ -6,22 +6,22 @@ module.exports = {
         .setName('player')
         .setDescription('Manage the player list')
         .addSubcommand(subcommand =>
-            subcommand.setName("add")
-                    .setDescription("Add a new player")
+            subcommand.setName('add')
+                    .setDescription('Add a new player')
                     .addStringOption(option =>
                         option.setName('playername')
                             .setDescription('The name of the player')
                             .setRequired(true)))
         .addSubcommand(subcommand =>
-            subcommand.setName("remove")
-                    .setDescription("Remove a player")
+            subcommand.setName('remove')
+                    .setDescription('Remove a player')
                     .addStringOption(option =>
                         option.setName('playername')
                             .setDescription('The name of the player you want to remove')
                             .setRequired(true)))
         .addSubcommand(subcommand =>
-            subcommand.setName("rename")
-                    .setDescription("Rename a player")
+            subcommand.setName('rename')
+                    .setDescription('Rename a player')
                     .addStringOption(option =>
                         option.setName('playername')
                             .setDescription('The name of the player you want to rename')
@@ -31,8 +31,8 @@ module.exports = {
                             .setDescription('The new name of the player')
                             .setRequired(true)))
         .addSubcommand(subcommand =>
-            subcommand.setName("display")
-                    .setDescription("Display the player list")),
+            subcommand.setName('display')
+                    .setDescription('Display the player list')),
     async execute(interaction) {
         if (interaction.options.getSubcommand() === 'add') {
             const playername = interaction.options.getString('playername')

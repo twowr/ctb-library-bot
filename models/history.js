@@ -9,7 +9,7 @@ const sequelize = new Sequelize('database', 'username', 'password', {
 const { Player } = require('./player.js')
 
 const History = sequelize.define('history', {
-    section_id: {
+    event_id: {
         type: Sequelize.DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true,
@@ -17,15 +17,15 @@ const History = sequelize.define('history', {
 
     player: Sequelize.DataTypes.STRING,
 
-    when: {
+    date: {
         type: Sequelize.DataTypes.DATEONLY,
         allowNull: false,
     },
-    whp: {
+    title: {
         type: Sequelize.DataTypes.STRING,
         allowNull: false,
     },
-    witi: {
+    body: {
         type: Sequelize.DataTypes.STRING,
         allowNull: false,
     }
