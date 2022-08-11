@@ -9,7 +9,7 @@ module.exports = {
         History.sync()
         Player.sync()
 
-        client.user.setActivity('黒皇帝 - Scattered Faith', { type: ActivityType.LISTENING })
+        client.user.setActivity('黒皇帝 - Scattered Faith', { type: ActivityType.Listening })
         console.log(`Logged in as ${client.user.tag}!`)
     }
 }
