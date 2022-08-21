@@ -1,4 +1,4 @@
-const { ActionRowBuilder, SelectMenuBuilder, ComponentType, SlashCommandBuilder } = require('discord.js')
+const { ActionRowBuilder, SlashCommandBuilder, TextInputStyle, ModalBuilder, TextInputBuilder } = require('discord.js')
 const { History } = require('../models/history.js')
 
 module.exports = {
@@ -46,7 +46,7 @@ module.exports = {
             const body = interaction.options.getString('body')
 
             const event = await History.create({ 
-                playername: playername,
+                player: playername,
                 date: date,
                 title: title,
                 body: body
@@ -56,62 +56,81 @@ module.exports = {
         }
         
         if (interaction.options.getSubcommand() === 'remove') {
-            const id = interaction.options.getString('id')
+            const id = interaction.options.getString('eventid')
             const history = await History.findByPk(id)
             await history.destroy()
             return interaction.reply({ content: `Event removed!`, ephemeral: true })
         }
 
         if (interaction.options.getSubcommand() === 'edit') {
-            const id = interaction.options.getString('id')
-            const history = await History.findByPk(id)
+            const id = interaction.options.getString('eventid')
+            // hey so basically here, something wrong, can't manage to undestand your database system or find answer working online so im gonna put comment where we should load them.
+            //const history = await History.findByPk() 
+            if (true) // Change that to check if history exist or not
+            {
 
-            const SelectMenuRow = new ActionRowBuilder()
-                    .addComponents(
-                        new SelectMenuBuilder()
-                            .setCustomId('select')
-                            .setPlaceholder('can select multiple')
-                            .setMinValues(1)
-                            .setMaxValues(4)
-                            .addOptions(
-                                {
-                                    label: 'player',
-                                    description: 'edit who this event belong to',
-                                    value: 'playername',
-                                },
-                                {
-                                    label: 'date',
-                                    description: 'edit the date of the event',
-                                    value: 'date',
-                                },
-                                {
-                                    label: 'title',
-                                    description: 'edit the title of the event',
-                                    value: 'title',
-                                },
-                                {
-                                    label: 'body',
-                                    description: 'edit the body of the event',
-                                    value: 'body',
-                                }
-                            ),
-                    )
+                const modal = new ModalBuilder()
+                    .setCustomId('editModel')
+                    .setTitle(`Update history ID : ${id}`);
 
-            const collectorSelectMenu = interaction.channel.createMessageComponentCollector({ComponentType: ComponentType.SelectMenu ,time: 25000 })
+                const playerInputActionRow = new ActionRowBuilder().addComponents(new TextInputBuilder()
+                    .setCustomId('playerInput')
+                    .setLabel("What is the player name of the history?")
+                    .setValue("Senko") // DATABASE CURRENT PLAYER NAME
+                    .setMaxLength(40)
+                    .setRequired(true)
+                    .setStyle(TextInputStyle.Short)
+                );
 
-            collectorSelectMenu.on('collect', async i => {
-                console.warn("menu")
-                if (i.user.id === interaction.user.id) {
-                    await i.deferUpdate()
-                    await new Promise(resolve => setTimeout(resolve, 4000))
+                const dateInputActionRow = new ActionRowBuilder().addComponents(new TextInputBuilder()
+                    .setCustomId('dateInput')
+                    .setLabel("What is the date of the history?")
+                    .setValue("2022-08-21") // DATABASE CURRENT DATE
+                    .setMinLength(10)
+                    .setMaxLength(11) // If this bot is still alive in the year 100000 this gonna be a miracle.
+                    .setRequired(true)
+                    .setPlaceholder("Format : YYYY-MM-DD. Ex : 2022-04-18")
+                    .setStyle(TextInputStyle.Short)
+                );
 
-                    i.editReply({ content: `<@${i.user.id}> clicked on the option with the value <${i.values.join(', ')}>`, ephemeral: true })
-                } else {
-                    i.reply({ content: `You are not allowed to interact with this!`, ephemeral: true })
-                }
-            })
+                const titleInputActionRow = new ActionRowBuilder().addComponents(new TextInputBuilder()
+                    .setCustomId('titleInput')
+                    .setLabel("What is the title of the history?")
+                    .setValue("This is the title of a story...") // DATABASE CURRENT TITLE
+                    .setMaxLength(150)
+                    .setRequired(true)
+                    .setStyle(TextInputStyle.Short)
+                );
 
-            return interaction.reply({ content: 'Select what you want to edit', components: [SelectMenuRow], ephemeral: true })
+                const bodyInputActionRow = new ActionRowBuilder().addComponents(new TextInputBuilder()
+                    .setCustomId('bodyInput')
+                    .setLabel("Insert the story here!")
+                    .setValue("body.") // DATABASE CURRENT BODY
+                    .setRequired(true)
+                    .setStyle(TextInputStyle.Paragraph)
+                );
+
+                    modal.addComponents(playerInputActionRow, dateInputActionRow,titleInputActionRow,bodyInputActionRow);
+                    await interaction.showModal(modal)
+                    
+                    // Get the Modal Submit Interaction that is emitted once the User submits the Modal
+                    const submitted = await interaction.awaitModalSubmit({ time: 600000 , filter: i => i.user.id === interaction.user.id }).catch(error => {
+                        console.error(error)
+                        return null
+                    })
+                    
+                    // We can use the https://discord.js.org/#/docs/discord.js/stable/class/ModalSubmitFieldsResolver to get the value of an input field from the Custom ID
+                    if (submitted) {
+                        const playerName = submitted.fields.getField("playerInput").value
+                        const date = submitted.fields.getField("dateInput").value
+                        const title = submitted.fields.getField("titleInput").value
+                        const body = submitted.fields.getField("bodyInput").value
+                        await submitted.reply({content: `<@${submitted.user.id}> submitted the form to update values in the database! The player name is **${playerName}**. The date is **${date}**. The title is **${title}**. Here is the story **${body}**` })
+                    }
+
+            } else {
+                return interaction.reply({ content: `The event ID : ${id} is invalid.`, ephemeral: true })
+            }
         }
     }
 }
