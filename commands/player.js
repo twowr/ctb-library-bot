@@ -37,7 +37,7 @@ module.exports = {
         if (interaction.options.getSubcommand() === 'add') {
             const playername = interaction.options.getString('playername')
             try {
-                const player = await Player.create({ playername: playername })
+                const player = await Player.create({ name: playername })
                 return interaction.reply({ content: `Player added!`, ephemeral: true })
             }
             catch (error) {

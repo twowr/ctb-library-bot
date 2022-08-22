@@ -1,4 +1,5 @@
 const { ActionRowBuilder, SlashCommandBuilder, TextInputStyle, ModalBuilder, TextInputBuilder } = require('discord.js')
+const { Player } = require('../models/player.js')
 const { PlayerEvent } = require('../models/playerEvent.js')
 
 module.exports = {
@@ -40,7 +41,12 @@ module.exports = {
                             .setRequired(true))),
 	async execute(interaction) {
         if (interaction.options.getSubcommand() === 'add') {
-            const playername = interaction.options.getString('playername')
+            const playername = Player.findOne({ where: { name: interaction.options.getString('player') } }).name
+
+            if (!playername) {
+                return interaction.reply({ content: 'Player not found', ephemeral: true })
+            }
+
             const date = interaction.options.getString('date')
             const title = interaction.options.getString('title')
             const body = interaction.options.getString('body')
@@ -76,7 +82,7 @@ module.exports = {
                 const playerInputActionRow = new ActionRowBuilder().addComponents(new TextInputBuilder()
                     .setCustomId('playerInput')
                     .setLabel("What is the player name of the history?")
-                    .setValue(playerEvent.playername) // DATABASE CURRENT PLAYER NAME
+                    .setValue(playerEvent.player.name) // DATABASE CURRENT PLAYER NAME
                     .setMaxLength(40)
                     .setRequired(true)
                     .setStyle(TextInputStyle.Short)

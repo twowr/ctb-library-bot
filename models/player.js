@@ -7,7 +7,7 @@ const sequelize = new Sequelize('database', 'username', 'password', {
 })
 
 const Player = sequelize.define('player', {
-    playername: {
+    name: {
         type: Sequelize.DataTypes.STRING,
         unique: true,
         allowNull: false,
