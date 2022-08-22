@@ -8,7 +8,7 @@ const sequelize = new Sequelize('database', 'username', 'password', {
 
 const { Player } = require('./player.js')
 
-const History = sequelize.define('history', {
+const PlayerEvent = sequelize.define('event', {
     event_id: {
         type: Sequelize.DataTypes.INTEGER,
         primaryKey: true,
@@ -33,6 +33,6 @@ const History = sequelize.define('history', {
     timestamps: false,
 })
 
-History.belongsTo(Player, { foreignKey: 'player', as : 'name' })
+PlayerEvent.belongsTo(Player, { foreignKey: 'player', as : 'playername' })
 
-module.exports = { History }
+module.exports = { PlayerEvent }

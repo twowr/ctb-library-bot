@@ -1,5 +1,5 @@
 const { ActionRowBuilder, SlashCommandBuilder, TextInputStyle, ModalBuilder, TextInputBuilder } = require('discord.js')
-const { History } = require('../models/history.js')
+const { PlayerEvent } = require('../models/playerEvent.js')
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -45,7 +45,7 @@ module.exports = {
             const title = interaction.options.getString('title')
             const body = interaction.options.getString('body')
 
-            const event = await History.create({ 
+            const event = await PlayerEvent.create({
                 player: playername,
                 date: date,
                 title: title,
@@ -57,16 +57,16 @@ module.exports = {
         
         if (interaction.options.getSubcommand() === 'remove') {
             const id = interaction.options.getString('eventid')
-            const history = await History.findByPk(id)
-            await history.destroy()
+            const playerEvent = await PlayerEvent.findByPk(id)
+            await playerEvent.destroy()
             return interaction.reply({ content: `Event removed!`, ephemeral: true })
         }
 
         if (interaction.options.getSubcommand() === 'edit') {
             const id = interaction.options.getString('eventid')
             // hey so basically here, something wrong, can't manage to undestand your database system or find answer working online so im gonna put comment where we should load them.
-            //const history = await History.findByPk() 
-            if (true) // Change that to check if history exist or not
+            const playerEvent = await PlayerEvent.findByPk(id) 
+            if (playerEvent) // Change that to check if history exist or not
             {
 
                 const modal = new ModalBuilder()
@@ -76,7 +76,7 @@ module.exports = {
                 const playerInputActionRow = new ActionRowBuilder().addComponents(new TextInputBuilder()
                     .setCustomId('playerInput')
                     .setLabel("What is the player name of the history?")
-                    .setValue("Senko") // DATABASE CURRENT PLAYER NAME
+                    .setValue(playerEvent.playername) // DATABASE CURRENT PLAYER NAME
                     .setMaxLength(40)
                     .setRequired(true)
                     .setStyle(TextInputStyle.Short)
@@ -85,7 +85,7 @@ module.exports = {
                 const dateInputActionRow = new ActionRowBuilder().addComponents(new TextInputBuilder()
                     .setCustomId('dateInput')
                     .setLabel("What is the date of the history?")
-                    .setValue("2022-08-21") // DATABASE CURRENT DATE
+                    .setValue(playerEvent.date) // DATABASE CURRENT DATE
                     .setMinLength(10)
                     .setMaxLength(11) // If this bot is still alive in the year 100000 this gonna be a miracle.
                     .setRequired(true)
@@ -96,7 +96,7 @@ module.exports = {
                 const titleInputActionRow = new ActionRowBuilder().addComponents(new TextInputBuilder()
                     .setCustomId('titleInput')
                     .setLabel("What is the title of the history?")
-                    .setValue("This is the title of a story...") // DATABASE CURRENT TITLE
+                    .setValue(playerEvent.title) // DATABASE CURRENT TITLE
                     .setMaxLength(150)
                     .setRequired(true)
                     .setStyle(TextInputStyle.Short)
@@ -105,7 +105,7 @@ module.exports = {
                 const bodyInputActionRow = new ActionRowBuilder().addComponents(new TextInputBuilder()
                     .setCustomId('bodyInput')
                     .setLabel("Insert the story here!")
-                    .setValue("body.") // DATABASE CURRENT BODY
+                    .setValue(playerEvent.body) // DATABASE CURRENT BODY
                     .setRequired(true)
                     .setStyle(TextInputStyle.Paragraph)
                 );
