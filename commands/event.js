@@ -75,7 +75,8 @@ module.exports = {
 
         if (interaction.options.getSubcommand() === 'edit') {
             const eventIDInput = interaction.options.getString('eventid')
-            const playerEvent = await PlayerEvent.findByPk(eventIDInput) 
+            const playerEvent = await PlayerEvent.findByPk(eventIDInput)
+            const currentPlayerData = await playerEvent.getPlayer()
             if (!playerEvent)
             {
                 return interaction.reply({ content: `The event ID **${eventIDInput}** is invalid.`, ephemeral: true })
@@ -88,7 +89,7 @@ module.exports = {
             const playerInputActionRow = new ActionRowBuilder().addComponents(new TextInputBuilder()
                 .setCustomId('playerInput')
                 .setLabel("What is the player name of the history?")
-                .setValue(await playerEvent.getPlayer().name)
+                .setValue(currentPlayerData.name)
                 .setMaxLength(40)
                 .setRequired(true)
                 .setStyle(TextInputStyle.Short)
