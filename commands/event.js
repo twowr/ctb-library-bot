@@ -47,7 +47,7 @@ module.exports = {
 
             const playerData = await Player.findOne({ where: { name: playerNameInput } })
 
-            if (playerData === null) {
+            if (!playerData) {
                 return interaction.reply({ content: `**${playerNameInput}** wasn't found inside the player list.`, ephemeral: true })
             }
 
@@ -80,7 +80,6 @@ module.exports = {
             {
                 return interaction.reply({ content: `The event ID **${eventIDInput}** is invalid.`, ephemeral: true })
             }
-            const playerDatabase = await Player.findByPk(playerEvent.Player)
 
             const modal = new ModalBuilder()
                 .setCustomId('editModel')
@@ -89,7 +88,7 @@ module.exports = {
             const playerInputActionRow = new ActionRowBuilder().addComponents(new TextInputBuilder()
                 .setCustomId('playerInput')
                 .setLabel("What is the player name of the history?")
-                .setValue(playerDatabase.name) 
+                .setValue(await playerEvent.getPlayer().name)
                 .setMaxLength(40)
                 .setRequired(true)
                 .setStyle(TextInputStyle.Short)
@@ -136,22 +135,19 @@ module.exports = {
                 if (submitted) {
 
                     const playerNameInput = submitted.fields.getField("playerInput").value
-                    var playerNameIndex = playerDatabase.Player
                     const dateInput = submitted.fields.getField("dateInput").value
                     const titleInput = submitted.fields.getField("titleInput").value
                     const bodyInput = submitted.fields.getField("bodyInput").value
-                    
 
-                    if (playerNameInput != playerDatabase.name) 
-                    {
-                        const newPlayerDatabase = await Player.findOne({ where: { name: playerNameInput } })
-                        if (!newPlayerDatabase) {
-                            return submitted.reply({ content: `**${playerNameInput}** wasn't found inside the player list.`, ephemeral: true })
-                        }
-                        playerNameIndex = newPlayerDatabase.id
+                    const playerData = Player.findOne({ where: { name: playerNameInput } })
+
+                    if (!playerData) {
+                        return interaction.reply({ content: `**${playerNameInput}** wasn't found inside the player list.`, ephemeral: true })
                     }
+                    
                     try {
-                        await playerEvent.update({ Player: playerNameIndex, date: dateInput, title: titleInput, body: bodyInput}, { where: { event_id: eventIDInput } })
+                        const result = await playerEvent.update({ date: dateInput, title: titleInput, body: bodyInput}, { where: { event_id: eventIDInput } })
+                        await result.setPlayer(playerData)
                     }
                     catch(err) {
                         console.error(err)

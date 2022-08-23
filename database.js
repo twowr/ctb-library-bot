@@ -9,6 +9,6 @@ const sequelize = new Sequelize('database', 'username', 'password', {
 const Player = require('./models/player')(sequelize, Sequelize)
 const PlayerEvent = require('./models/playerEvent')(sequelize, Sequelize)
 
-PlayerEvent.belongsTo(Player)
+PlayerEvent.belongsTo(Player, { as: 'Player' })
 
 module.exports = { Player, PlayerEvent }
