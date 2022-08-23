@@ -1,6 +1,6 @@
 const { ActivityType } = require('discord.js')
 
-const { Player, PlayerEvent } = require('..database.js')
+const { Player, PlayerEvent } = require('../database.js')
 
 module.exports = {
     name: 'ready',
