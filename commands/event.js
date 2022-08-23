@@ -140,7 +140,7 @@ module.exports = {
                     const titleInput = submitted.fields.getField("titleInput").value
                     const bodyInput = submitted.fields.getField("bodyInput").value
 
-                    const playerData = Player.findOne({ where: { name: playerNameInput } })
+                    const playerData = await Player.findOne({ where: { name: playerNameInput } })
 
                     if (!playerData) {
                         return interaction.reply({ content: `**${playerNameInput}** wasn't found inside the player list.`, ephemeral: true })
