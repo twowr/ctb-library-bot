@@ -51,7 +51,7 @@ module.exports = {
 
         if (interaction.options.getSubcommand() === 'remove') {
             const playername = interaction.options.getString('playername')
-            await Player.destroy({ where: { playername: playername } })
+            await Player.destroy({ where: { name: playername } })
 
             return interaction.reply({ content: `Player removed!`, ephemeral: true })
         }
@@ -59,14 +59,14 @@ module.exports = {
         if (interaction.options.getSubcommand() === 'rename') {
             const playername = interaction.options.getString('playername')
             const newplayername = interaction.options.getString('newplayername')
-            await Player.update({ playername: newplayername }, { where: { playername: playername } })
+            await Player.update({ name: newplayername }, { where: { name: playername } })
 
             return interaction.reply({ content: `Player renamed!`, ephemeral: true })
         }
 
         if (interaction.options.getSubcommand() === 'display') {
             const players = await Player.findAll()
-            const playerlist = players.map(player => player.playername).join(', ')
+            const playerlist = players.map(player => player.name).join(', ')
             
             return interaction.reply({ content: `The player list is: ${playerlist}`})
         }

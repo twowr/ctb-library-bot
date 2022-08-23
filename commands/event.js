@@ -41,9 +41,9 @@ module.exports = {
                             .setRequired(true))),
 	async execute(interaction) {
         if (interaction.options.getSubcommand() === 'add') {
-            const playername = Player.findOne({ where: { name: interaction.options.getString('player') } }).name
+            const player = await Player.findOne({ where: { name: interaction.options.getString('player') } })
 
-            if (!playername) {
+            if (player === null) {
                 return interaction.reply({ content: 'Player not found', ephemeral: true })
             }
 
@@ -52,33 +52,32 @@ module.exports = {
             const body = interaction.options.getString('body')
 
             const event = await PlayerEvent.create({
-                player: playername,
                 date: date,
                 title: title,
                 body: body
             })
+
+            await event.setPlayer(player)
 
             return interaction.reply({ content: `Event added!`, ephemeral: true })
         }
         
         if (interaction.options.getSubcommand() === 'remove') {
             const id = interaction.options.getString('eventid')
-            const playerEvent = await PlayerEvent.findByPk(id)
-            await playerEvent.destroy()
+            const playerEvent = await PlayerEvent.findByPk(id).destroy()
             return interaction.reply({ content: `Event removed!`, ephemeral: true })
         }
 
         if (interaction.options.getSubcommand() === 'edit') {
             const id = interaction.options.getString('eventid')
             // hey so basically here, something wrong, can't manage to undestand your database system or find answer working online so im gonna put comment where we should load them.
-            const playerEvent = await PlayerEvent.findByPk(id) 
+            const playerEvent = await PlayerEvent.findOne({ where: { event_id: id }, include: 'player' })
             if (playerEvent) // Change that to check if history exist or not
             {
-
                 const modal = new ModalBuilder()
                     .setCustomId('editModel')
                     .setTitle(`Update history ID : ${id}`);
-
+                
                 const playerInputActionRow = new ActionRowBuilder().addComponents(new TextInputBuilder()
                     .setCustomId('playerInput')
                     .setLabel("What is the player name of the history?")
@@ -127,11 +126,20 @@ module.exports = {
                     
                     // We can use the https://discord.js.org/#/docs/discord.js/stable/class/ModalSubmitFieldsResolver to get the value of an input field from the Custom ID
                     if (submitted) {
-                        const playerName = submitted.fields.getField("playerInput").value
+                        const player = await Player.findOne({ where: { name: submitted.getString('playerInput') } })
                         const date = submitted.fields.getField("dateInput").value
                         const title = submitted.fields.getField("titleInput").value
                         const body = submitted.fields.getField("bodyInput").value
-                        await submitted.reply({content: `<@${submitted.user.id}> submitted the form to update values in the database! The player name is **${playerName}**. The date is **${date}**. The title is **${title}**. Here is the story **${body}**` })
+                        await submitted.reply({content: `<@${submitted.user.id}> submitted the form to update values in the database! The player name is **${player.name}**. The date is **${date}**. The title is **${title}**. Here is the story **${body}**` })
+
+                        if (update === null) {
+                            return interaction.reply({ content: 'Player not found', ephemeral: true })
+                        }
+                        
+                        const update = await playerEvent.update({ date: date, title: title, body: body })
+                        update.setPlayer(player)
+
+                        return interaction.followUp({ content: `Event updated!`, ephemeral: true })
                     }
 
             } else {

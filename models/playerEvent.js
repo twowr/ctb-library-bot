@@ -15,8 +15,6 @@ const PlayerEvent = sequelize.define('event', {
         autoIncrement: true,
     },
 
-    Player: Sequelize.DataTypes.STRING,
-
     date: {
         type: Sequelize.DataTypes.DATEONLY,
         allowNull: false,
@@ -33,6 +31,6 @@ const PlayerEvent = sequelize.define('event', {
     timestamps: false,
 })
 
-PlayerEvent.belongsTo(Player, { foreignKey: 'Player', as : 'player' })
+PlayerEvent.hasOne(Player, { foreignKey: 'Player', as : 'player' })
 
 module.exports = { PlayerEvent }
