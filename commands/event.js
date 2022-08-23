@@ -11,11 +11,11 @@ module.exports = {
                     .setDescription('Add a new event')
                     .addStringOption(option =>
                         option.setName('player')
-                            .setDescription('who is this event from')
+                            .setDescription('Who is this event from')
                             .setRequired(true))
                     .addStringOption(option =>
                         option.setName('date')
-                            .setDescription('format: YYYY-MM-DD')
+                            .setDescription('Format: YYYY-MM-DD')
                             .setRequired(true))
                     .addStringOption(option =>
                         option.setName('title')
@@ -41,102 +41,125 @@ module.exports = {
                             .setRequired(true))),
 	async execute(interaction) {
         if (interaction.options.getSubcommand() === 'add') {
-            const playername = Player.findOne({ where: { name: interaction.options.getString('player') } }).name
 
-            if (!playername) {
-                return interaction.reply({ content: 'Player not found', ephemeral: true })
+            const dateInput = interaction.options.getString('date')
+            const titleInput = interaction.options.getString('title')
+            const bodyInput = interaction.options.getString('body')
+            const playerNameInput = interaction.options.getString('player')
+
+            const playerData = await Player.findOne({ where: { name: playerNameInput } })
+
+            if (!playerData) {
+                return interaction.reply({ content: `**${playerNameInput}** wasn't found inside the player list.`, ephemeral: true })
             }
 
-            const date = interaction.options.getString('date')
-            const title = interaction.options.getString('title')
-            const body = interaction.options.getString('body')
-
-            const event = await PlayerEvent.create({
-                player: playername,
-                date: date,
-                title: title,
-                body: body
+            const result = await PlayerEvent.create({
+                Player: playerData.id,
+                date: dateInput,
+                title: titleInput,
+                body: bodyInput
             })
 
-            return interaction.reply({ content: `Event added!`, ephemeral: true })
+            return interaction.reply({ content: `Your event have successfully been assigned to **${playerNameInput}** as Event ID **${result.event_id}**!`, ephemeral: true })
         }
         
         if (interaction.options.getSubcommand() === 'remove') {
-            const id = interaction.options.getString('eventid')
-            const playerEvent = await PlayerEvent.findByPk(id)
+            const eventIDInput = interaction.options.getString('eventid')
+            const playerEvent = await PlayerEvent.findByPk(eventIDInput)
+            if (!playerEvent)
+            {
+                return interaction.reply({ content: `The event ID **${eventIDInput}** is invalid.`, ephemeral: true })
+            }
             await playerEvent.destroy()
-            return interaction.reply({ content: `Event removed!`, ephemeral: true })
+            return interaction.reply({ content: `The event ID **${eventIDInput}** have successfully been removed!`, ephemeral: true })
         }
 
         if (interaction.options.getSubcommand() === 'edit') {
-            const id = interaction.options.getString('eventid')
-            // hey so basically here, something wrong, can't manage to undestand your database system or find answer working online so im gonna put comment where we should load them.
-            const playerEvent = await PlayerEvent.findByPk(id) 
-            if (playerEvent) // Change that to check if history exist or not
+            const eventIDInput = interaction.options.getString('eventid')
+            const playerEvent = await PlayerEvent.findByPk(eventIDInput) 
+            if (!playerEvent)
             {
-
-                const modal = new ModalBuilder()
-                    .setCustomId('editModel')
-                    .setTitle(`Update history ID : ${id}`);
-
-                const playerInputActionRow = new ActionRowBuilder().addComponents(new TextInputBuilder()
-                    .setCustomId('playerInput')
-                    .setLabel("What is the player name of the history?")
-                    .setValue(playerEvent.player.name) // DATABASE CURRENT PLAYER NAME
-                    .setMaxLength(40)
-                    .setRequired(true)
-                    .setStyle(TextInputStyle.Short)
-                );
-
-                const dateInputActionRow = new ActionRowBuilder().addComponents(new TextInputBuilder()
-                    .setCustomId('dateInput')
-                    .setLabel("What is the date of the history?")
-                    .setValue(playerEvent.date) // DATABASE CURRENT DATE
-                    .setMinLength(10)
-                    .setMaxLength(11) // If this bot is still alive in the year 100000 this gonna be a miracle.
-                    .setRequired(true)
-                    .setPlaceholder("Format : YYYY-MM-DD. Ex : 2022-04-18")
-                    .setStyle(TextInputStyle.Short)
-                );
-
-                const titleInputActionRow = new ActionRowBuilder().addComponents(new TextInputBuilder()
-                    .setCustomId('titleInput')
-                    .setLabel("What is the title of the history?")
-                    .setValue(playerEvent.title) // DATABASE CURRENT TITLE
-                    .setMaxLength(150)
-                    .setRequired(true)
-                    .setStyle(TextInputStyle.Short)
-                );
-
-                const bodyInputActionRow = new ActionRowBuilder().addComponents(new TextInputBuilder()
-                    .setCustomId('bodyInput')
-                    .setLabel("Insert the story here!")
-                    .setValue(playerEvent.body) // DATABASE CURRENT BODY
-                    .setRequired(true)
-                    .setStyle(TextInputStyle.Paragraph)
-                );
-
-                    modal.addComponents(playerInputActionRow, dateInputActionRow,titleInputActionRow,bodyInputActionRow);
-                    await interaction.showModal(modal)
-                    
-                    // Get the Modal Submit Interaction that is emitted once the User submits the Modal
-                    const submitted = await interaction.awaitModalSubmit({ time: 600000 , filter: i => i.user.id === interaction.user.id }).catch(error => {
-                        console.error(error)
-                        return null
-                    })
-                    
-                    // We can use the https://discord.js.org/#/docs/discord.js/stable/class/ModalSubmitFieldsResolver to get the value of an input field from the Custom ID
-                    if (submitted) {
-                        const playerName = submitted.fields.getField("playerInput").value
-                        const date = submitted.fields.getField("dateInput").value
-                        const title = submitted.fields.getField("titleInput").value
-                        const body = submitted.fields.getField("bodyInput").value
-                        await submitted.reply({content: `<@${submitted.user.id}> submitted the form to update values in the database! The player name is **${playerName}**. The date is **${date}**. The title is **${title}**. Here is the story **${body}**` })
-                    }
-
-            } else {
-                return interaction.reply({ content: `The event ID : ${id} is invalid.`, ephemeral: true })
+                return interaction.reply({ content: `The event ID **${eventIDInput}** is invalid.`, ephemeral: true })
             }
+            const playerDatabase = await Player.findByPk(playerEvent.Player)
+
+            const modal = new ModalBuilder()
+                .setCustomId('editModel')
+                .setTitle(`Update history ID : ${eventIDInput}`);
+
+            const playerInputActionRow = new ActionRowBuilder().addComponents(new TextInputBuilder()
+                .setCustomId('playerInput')
+                .setLabel("What is the player name of the history?")
+                .setValue(playerDatabase.name) 
+                .setMaxLength(40)
+                .setRequired(true)
+                .setStyle(TextInputStyle.Short)
+            );
+
+            const dateInputActionRow = new ActionRowBuilder().addComponents(new TextInputBuilder()
+                .setCustomId('dateInput')
+                .setLabel("What is the date of the history?")
+                .setValue(playerEvent.date)
+                .setMinLength(10)
+                .setMaxLength(11) // If this bot is still alive in the year 100000 this gonna be a miracle.
+                .setRequired(true)
+                .setPlaceholder("Format : YYYY-MM-DD. Ex : 2022-04-18")
+                .setStyle(TextInputStyle.Short)
+            );
+
+            const titleInputActionRow = new ActionRowBuilder().addComponents(new TextInputBuilder()
+                .setCustomId('titleInput')
+                .setLabel("What is the title of the history?")
+                .setValue(playerEvent.title)
+                .setMaxLength(150)
+                .setRequired(true)
+                .setStyle(TextInputStyle.Short)
+            );
+
+            const bodyInputActionRow = new ActionRowBuilder().addComponents(new TextInputBuilder()
+                .setCustomId('bodyInput')
+                .setLabel("Insert the story here!")
+                .setValue(playerEvent.body) 
+                .setRequired(true)
+                .setStyle(TextInputStyle.Paragraph)
+            );
+
+                modal.addComponents(playerInputActionRow, dateInputActionRow,titleInputActionRow,bodyInputActionRow);
+                await interaction.showModal(modal)
+                    
+                // Get the Modal Submit Interaction that is emitted once the User submits the Modal
+                const submitted = await interaction.awaitModalSubmit({ time: 600000 , filter: i => i.user.id === interaction.user.id }).catch(error => {
+                    console.error(error)
+                    return null
+                })
+
+                // We can use the https://discord.js.org/#/docs/discord.js/stable/class/ModalSubmitFieldsResolver to get the value of an input field from the Custom ID
+                if (submitted) {
+
+                    const playerNameInput = submitted.fields.getField("playerInput").value
+                    var playerNameIndex = playerDatabase.Player
+                    const dateInput = submitted.fields.getField("dateInput").value
+                    const titleInput = submitted.fields.getField("titleInput").value
+                    const bodyInput = submitted.fields.getField("bodyInput").value
+                    
+
+                    if (playerNameInput != playerDatabase.name) 
+                    {
+                        const newPlayerDatabase = await Player.findOne({ where: { name: playerNameInput } })
+                        if (!newPlayerDatabase) {
+                            return submitted.reply({ content: `**${playerNameInput}** wasn't found inside the player list.`, ephemeral: true })
+                        }
+                        playerNameIndex = newPlayerDatabase.id
+                    }
+                    try {
+                        await playerEvent.update({ Player: playerNameIndex, date: dateInput, title: titleInput, body: bodyInput}, { where: { event_id: eventIDInput } })
+                    }
+                    catch(err) {
+                        console.error(err)
+                        return submitted.reply({content: `Something went wrong when the bot was trying to update the event ID **${eventIDInput}**.`, ephemeral: true })
+                    }
+                    await submitted.reply({content: `The event ID **${eventIDInput}** have been updated.`, ephemeral: true })
+                }
         }
     }
 }
