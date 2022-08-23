@@ -139,16 +139,16 @@ module.exports = {
                     const dateInput = submitted.fields.getField("dateInput").value
                     const titleInput = submitted.fields.getField("titleInput").value
                     const bodyInput = submitted.fields.getField("bodyInput").value
-
-                    const playerData = await Player.findOne({ where: { name: playerNameInput } })
-
-                    if (!playerData) {
-                        return interaction.reply({ content: `**${playerNameInput}** wasn't found inside the player list.`, ephemeral: true })
-                    }
                     
                     try {
                         const result = await playerEvent.update({ date: dateInput, title: titleInput, body: bodyInput}, { where: { event_id: eventIDInput } })
-                        await result.setPlayer(playerData)
+                        if (playerNameInput != currentPlayerData.name) {
+                            const playerData = await Player.findOne({ where: { name: playerNameInput } })
+                            if (!playerData) {
+                                return interaction.reply({ content: `**${playerNameInput}** wasn't found inside the player list.`, ephemeral: true })
+                            }
+                            await result.setPlayer(playerData)
+                        }
                     }
                     catch(err) {
                         console.error(err)
