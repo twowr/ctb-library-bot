@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require('discord.js')
-const { Player } = require('../models/player.js')
+const { Player } = require('../database.js')
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -9,25 +9,25 @@ module.exports = {
             subcommand.setName('add')
                     .setDescription('Add a new player')
                     .addStringOption(option =>
-                        option.setName('playername')
+                        option.setName('player_name')
                             .setDescription('The name of the player')
                             .setRequired(true)))
         .addSubcommand(subcommand =>
             subcommand.setName('remove')
                     .setDescription('Remove a player')
                     .addStringOption(option =>
-                        option.setName('playername')
+                        option.setName('player_name')
                             .setDescription('The name of the player you want to remove')
                             .setRequired(true)))
         .addSubcommand(subcommand =>
             subcommand.setName('rename')
                     .setDescription('Rename a player')
                     .addStringOption(option =>
-                        option.setName('playername')
+                        option.setName('player_name')
                             .setDescription('The name of the player you want to rename')
                             .setRequired(true))
                     .addStringOption(option =>
-                        option.setName('newplayername')
+                        option.setName('new_player_name')
                             .setDescription('The new name of the player')
                             .setRequired(true)))
         .addSubcommand(subcommand =>
@@ -35,40 +35,49 @@ module.exports = {
                     .setDescription('Display the player list')),
     async execute(interaction) {
         if (interaction.options.getSubcommand() === 'add') {
-            const playername = interaction.options.getString('playername')
+            const playerNameInput = interaction.options.getString('player_name')
             try {
-                const player = await Player.create({ name: playername })
-                return interaction.reply({ content: `Player added!`, ephemeral: true })
+                await Player.create({ name: playerNameInput })
+                return interaction.reply({ content: `**${playerNameInput}** have been added into the player list!`, ephemeral: true })
             }
             catch (error) {
                 if (error.name === 'SequelizeUniqueConstraintError') {
-                    return interaction.reply({content: 'That player already in the database.', ephemeral: true})
+                    return interaction.reply({content: `**${playerNameInput}** is already already inside the database.`, ephemeral: true})
                 }
-    
-                return interaction.reply({content: 'Something went wrong with adding the player.', ephemeral: true})
+                console.error(error)
+                return interaction.reply({content: 'Something went wrong when we where adding the player into the list.', ephemeral: true})
             }
         }
 
         if (interaction.options.getSubcommand() === 'remove') {
-            const playername = interaction.options.getString('playername')
-            await Player.destroy({ where: { name: playername } })
-
-            return interaction.reply({ content: `Player removed!`, ephemeral: true })
+            const playerNameInput = interaction.options.getString('player_name')
+            const result = await Player.destroy({ where: { name: playerNameInput } })
+            
+            if (result == 0) // Side note here, from what Ive seen using console.log, result seem to be egual to the number of entry that have been deleted.
+            {
+                return interaction.reply({ content: `**${playerNameInput}** wasn't found inside the player list!`, ephemeral: true })
+            }
+            return interaction.reply({ content: `**${playerNameInput}** have been removed from the player list!`, ephemeral: true })
         }
 
         if (interaction.options.getSubcommand() === 'rename') {
-            const playername = interaction.options.getString('playername')
-            const newplayername = interaction.options.getString('newplayername')
-            await Player.update({ name: newplayername }, { where: { name: playername } })
+            const playerNameInput = interaction.options.getString('player_name')
+            const newPlayerNameInput = interaction.options.getString('new_player_name')
+            const result = await Player.update({ name: newPlayerNameInput }, { where: { name: playerNameInput } })
 
-            return interaction.reply({ content: `Player renamed!`, ephemeral: true })
+            if (result[0] == 0)
+            {
+                return interaction.reply({ content: `**${playerNameInput}** wasn't found inside the player list!`, ephemeral: true })
+            }
+            
+            return interaction.reply({ content: `**${playerNameInput}** have been renamed to **${newPlayerNameInput}**!`, ephemeral: true })
         }
 
         if (interaction.options.getSubcommand() === 'display') {
             const players = await Player.findAll()
-            const playerlist = players.map(player => player.name).join(', ')
+            const playerList = players.map(player => player.name).join(' **, **')
             
-            return interaction.reply({ content: `The player list is: ${playerlist}`})
+            return interaction.reply({ content: `** ${playerList} **`, ephemeral: true })
         }
     }
 }
