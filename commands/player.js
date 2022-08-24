@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require('discord.js')
-const { Player } = require('../database.js')
+const { Player, PlayerEvent } = require('../database.js')
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -32,7 +32,14 @@ module.exports = {
                             .setRequired(true)))
         .addSubcommand(subcommand =>
             subcommand.setName('display')
-                    .setDescription('Display the player list')),
+                    .setDescription('Display the player list'))
+        .addSubcommand(subcommand =>
+            subcommand.setName('events')
+                    .setDescription('Display all events owned by the player')
+                    .addStringOption(option =>
+                        option.setName('player_name')
+                            .setDescription('The name of the player')
+                            .setRequired(true))),
     async execute(interaction) {
         if (interaction.options.getSubcommand() === 'add') {
             const playerNameInput = interaction.options.getString('player_name')
@@ -74,10 +81,24 @@ module.exports = {
         }
 
         if (interaction.options.getSubcommand() === 'display') {
+            await interaction.deferReply({ephemeral: true })
             const players = await Player.findAll()
             const playerList = players.map(player => player.name).join(' **, **')
             
-            return interaction.reply({ content: `** ${playerList} **`, ephemeral: true })
+            return await interaction.editReply({ content: `**${playerList} **`, ephemeral: true })
+        }
+
+        if (interaction.options.getSubcommand() === 'events') {
+            await interaction.deferReply({ephemeral: true })
+            const playerNameInput = interaction.options.getString('player_name')
+            const playerData = await Player.findOne({ where: { name: playerNameInput } })
+
+            if (!playerData) {
+                return await interaction.editReply({ content: `**${playerNameInput}** wasn't found inside the player list.`, ephemeral: true })
+            }
+            const playerEvents = await PlayerEvent.findAll({ where: { PlayerId: playerData.id } }) // Search inside all playerEvents for all PlayerId value matching the ID of the asked player.
+            const eventList = playerEvents.map(playerEvents => playerEvents.event_id).join(' **, **')
+            return await interaction.editReply({ content: `**${eventList} **`, ephemeral: true })
         }
     }
 }
