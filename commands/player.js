@@ -1,5 +1,6 @@
-const { SlashCommandBuilder } = require('discord.js')
+const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType } = require('discord.js')
 const { Player, PlayerEvent } = require('../database.js')
+const player = require('../models/player.js')
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -82,10 +83,104 @@ module.exports = {
 
         if (interaction.options.getSubcommand() === 'display') {
             await interaction.deferReply({ephemeral: true })
-            const players = await Player.findAll()
-            const playerList = players.map(player => player.name).join(' **, **')
+            const players = await Player.findAll() // Embed Fiels limits is 25, if a 26e entry exist, the next page button gonna show up.
+            const playersLength = players.length - 1// Since .lenght do not take in account the fact that the first ID in the table is 0, it mean that the entry 25 will be the entry 26
+            const indexPerPage = 19; // Number of values that can be displayed in one page. (NOTE THAT DUE TO A ERROR INTO THE CODE, THE VALUE MAY VARY FROM 1 TO 2 BIGGER OR SMALLER)
+            var playersIndex = 0
+
+            const listEmbed = new EmbedBuilder()
+                .setColor(0x0099FF)
+                .setTitle('Players')
+                .setTimestamp();
+
+            if (playersLength >= 25) { 
+                const collectorButton = interaction.channel.createMessageComponentCollector({ComponentType: ComponentType.Button ,time: 600000 })
+
+                collectorButton.on('collect', async i => {
+                    if (i.user.id === interaction.user.id) {
+                        await i.deferUpdate();
+                        var embedNameListDescription = " "
+                        
+                        if (i.customId == "next") {
+                            var currentPlayerIndex = playersIndex
+                            for (playersIndex; playersIndex <= (indexPerPage + currentPlayerIndex) ; playersIndex++) {
+                                if (!players[playersIndex]) { playersIndex--; break;}
+                                embedNameListDescription += `**${players[playersIndex].name}**\r\n`
+                            }
+                        } else if (i.customId == "back") {
+                            var lastPlayerIndex = playersLength - playersIndex
+                            for (let index = lastPlayerIndex; index <= (lastPlayerIndex + indexPerPage); index++) {
+                                if (!players[index]) {break;}
+                                playersIndex = index
+                                embedNameListDescription += `**${players[index].name}**\r\n`
+                            } 
+                        }
+                        listEmbed.setFooter({ text: `Showing ${playersIndex}/${playersLength}`})
+                        listEmbed.setDescription(embedNameListDescription)
+                        
+
+                        var nextButtonDisabled = true;
+                        if (playersIndex < playersLength) { 
+                            nextButtonDisabled = false;
+                        }
+                        var backButtonDisabled = true;
+                        if (playersIndex > indexPerPage) { 
+                            backButtonDisabled = false;
+                        }
             
-            return await interaction.editReply({ content: `**${playerList} **`, ephemeral: true })
+                        const ButtonsRow = new ActionRowBuilder()
+                            .addComponents(
+                                new ButtonBuilder()
+                                    .setCustomId('back')
+                                    .setLabel('Back')
+                                    .setEmoji('◀️')
+                                    .setDisabled(backButtonDisabled)
+                                    .setStyle(ButtonStyle.Primary),
+                                new ButtonBuilder()
+                                    .setCustomId('next')
+                                    .setLabel('Next')
+                                    .setEmoji('▶️')
+                                    .setDisabled(nextButtonDisabled)
+                                    .setStyle(ButtonStyle.Primary),
+                            );
+
+                        i.editReply({ephemeral: true , components: [ButtonsRow] , embeds: [listEmbed]})
+                    } else {
+                        i.reply({ content: `You are not allowed to interact with this!`, ephemeral: true });
+                    }
+                });
+            }
+
+            var embedNameListDescription = ""
+            for (playersIndex; playersIndex <= indexPerPage; playersIndex++) {
+                if (!players[playersIndex]) { playersIndex--; break;}
+                embedNameListDescription += `**${players[playersIndex].name}**\r\n`
+            } 
+            listEmbed.setDescription(embedNameListDescription)
+            listEmbed.setFooter({ text: `Showing ${playersIndex}/${playersLength}`})
+
+            var nextButtonDisabled = true;
+            if (playersIndex < playersLength) { 
+                nextButtonDisabled = false;
+            }
+
+            const ButtonsRow = new ActionRowBuilder()
+                .addComponents(
+                    new ButtonBuilder()
+                        .setCustomId('back')
+                        .setLabel('Back')
+                        .setEmoji('◀️')
+                        .setDisabled(true)
+                        .setStyle(ButtonStyle.Primary),
+                    new ButtonBuilder()
+                        .setCustomId('next')
+                        .setLabel('Next')
+                        .setEmoji('▶️')
+                        .setDisabled(nextButtonDisabled)
+                        .setStyle(ButtonStyle.Primary),
+                );
+
+            return await interaction.editReply({ephemeral: true , components: [ButtonsRow] , embeds: [listEmbed]})
         }
 
         if (interaction.options.getSubcommand() === 'events') {
