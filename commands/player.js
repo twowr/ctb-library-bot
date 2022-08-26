@@ -83,10 +83,11 @@ module.exports = {
 
         if (interaction.options.getSubcommand() === 'display') {
             await interaction.deferReply({ephemeral: true })
-            const players = await Player.findAll() // Embed Fiels limits is 25, if a 26e entry exist, the next page button gonna show up.
-            const playersLength = players.length - 1// Since .lenght do not take in account the fact that the first ID in the table is 0, it mean that the entry 25 will be the entry 26
-            const indexPerPage = 19; // Number of values that can be displayed in one page. (NOTE THAT DUE TO A ERROR INTO THE CODE, THE VALUE MAY VARY FROM 1 TO 2 BIGGER OR SMALLER)
-            var playersIndex = 0
+            const players = await Player.findAll()
+            const playersLength = players.length
+            const indexPerPage = 20
+            const maxPage = Math.ceil(playersLength/indexPerPage) - 1 //ceil return the smallest integer that is bigger than x, subtract 1 because it return the amount of page possible meanwhile we use a page system with starting page equal to 0
+            var currentPage = 0 //keep track of the current page
 
             const listEmbed = new EmbedBuilder()
                 .setColor(0x0099FF)
@@ -102,29 +103,28 @@ module.exports = {
                         var embedNameListDescription = " "
                         
                         if (i.customId == "next") {
-                            var currentPlayerIndex = playersIndex
-                            for (playersIndex; playersIndex <= (indexPerPage + currentPlayerIndex) ; playersIndex++) {
-                                if (!players[playersIndex]) { playersIndex--; break;}
-                                embedNameListDescription += `**${players[playersIndex].name}**\r\n`
+                            //loop from smallest index in current page to the highest
+                            currentPage++
+                            for (let index = (currentPage*indexPerPage); index <= ((currentPage+1)*indexPerPage)-1 ; index++) {
+                                if (!players[index]) {break;}
+                                embedNameListDescription += `**${index+1}: ${players[index].name}**\r\n`
                             }
                         } else if (i.customId == "back") {
-                            var lastPlayerIndex = playersLength - playersIndex
-                            for (let index = lastPlayerIndex; index <= (lastPlayerIndex + indexPerPage); index++) {
+                            currentPage--
+                            for (let index = (currentPage*indexPerPage); index <= ((currentPage+1)*indexPerPage)-1 ; index++) {
                                 if (!players[index]) {break;}
-                                playersIndex = index
-                                embedNameListDescription += `**${players[index].name}**\r\n`
-                            } 
+                                embedNameListDescription += `**${index+1}: ${players[index].name}**\r\n`
+                            }
                         }
-                        listEmbed.setFooter({ text: `Showing ${playersIndex}/${playersLength}`})
+                        listEmbed.setFooter({ text: `Showing page ${currentPage+1}/${maxPage+1}`})
                         listEmbed.setDescription(embedNameListDescription)
-                        
 
                         var nextButtonDisabled = true;
-                        if (playersIndex < playersLength) { 
+                        if (currentPage < maxPage) {
                             nextButtonDisabled = false;
                         }
                         var backButtonDisabled = true;
-                        if (playersIndex > indexPerPage) { 
+                        if (currentPage > 0) { 
                             backButtonDisabled = false;
                         }
             
@@ -152,15 +152,15 @@ module.exports = {
             }
 
             var embedNameListDescription = ""
-            for (playersIndex; playersIndex <= indexPerPage; playersIndex++) {
-                if (!players[playersIndex]) { playersIndex--; break;}
-                embedNameListDescription += `**${players[playersIndex].name}**\r\n`
-            } 
+            for (let index = (currentPage*indexPerPage); index <= ((currentPage+1)*indexPerPage)-1 ; index++) {
+                if (!players[index]) {break;}
+                embedNameListDescription += `**${index+1}: ${players[index].name}**\r\n`
+            }
+            listEmbed.setFooter({ text: `Showing page ${currentPage+1}/${maxPage+1}`})
             listEmbed.setDescription(embedNameListDescription)
-            listEmbed.setFooter({ text: `Showing ${playersIndex}/${playersLength}`})
 
             var nextButtonDisabled = true;
-            if (playersIndex < playersLength) { 
+            if (currentPage < maxPage) {
                 nextButtonDisabled = false;
             }
 
