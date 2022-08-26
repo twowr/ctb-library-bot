@@ -12,7 +12,7 @@ module.exports = {
             await command.execute(interaction)
         } catch (error) {
             console.error(error)
-            await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true })
+            
             if (interaction.deferred) // just handling deferred commands to prevent errors
             {
                 return await interaction.editReply({ content: 'There was an error while executing this command!', ephemeral: interaction.ephemeral })

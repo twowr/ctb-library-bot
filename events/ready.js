@@ -1,11 +1,10 @@
+const fs = require("fs");
 const { ActivityType } = require('discord.js')
-
 const { Player, PlayerEvent } = require('../database.js')
 
-const fs = require("fs");
 const statusPath = "status.txt"
 
-function getRandomLine(filePath){ // Bad Performances with big .txt files, would need a fix later.
+function getRandomLine(filePath){ // This function may have a memory impact if the .txt file become too big.
     var data = fs.readFileSync(filePath, 'utf8')
 
     const lines = data.split(/\r?\n/) 
@@ -17,14 +16,23 @@ module.exports = {
     name: 'ready',
     async execute(client) {
         console.log(`Logged in as ${client.user.tag}!`)
-        PlayerEvent.sync()
-        Player.sync()
+        await PlayerEvent.sync()
+        await Player.sync()
+        console.log(`Synchronized all database models!`)
 
-        client.user.setActivity(getRandomLine(statusPath), { type: ActivityType.Listening })
+        const currStatus = getRandomLine(statusPath)
+        if (currStatus) {
+            client.user.setActivity(currStatus, { type: ActivityType.Listening })
 
-        var minutes = 60, intervalTimer = minutes * 60 * 1000;
-        setInterval(function() {
-            client.user.setActivity(getRandomLine(statusPath), { type: ActivityType.Listening })
-        }, intervalTimer);
+            var minutes = 60
+            var intervalTimer = minutes * 60 * 1000;
+            setInterval(function() {
+                var newStatus = getRandomLine(statusPath)
+                while (newStatus == currStatus) {newStatus = getRandomLine(statusPath)}
+
+                client.user.setActivity(newStatus, { type: ActivityType.Listening })
+            }, intervalTimer);
+        }
+
     }
 }
